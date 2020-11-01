@@ -8,6 +8,11 @@
 const mysql = require('mysql');
 const config = require('../db/dbConfig');
 
+// 获取随机验证码
+const randomCode = (min, max) => {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 // 连接mysql
 const connect = () => {
   const { host, user, password, database } = config;
@@ -58,5 +63,6 @@ const queryOne = (sql) => {
 
 module.exports = {
   querySql,
-  queryOne
+  queryOne,
+  randomCode
 }

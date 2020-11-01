@@ -13,6 +13,12 @@ const routes = require('./routes'); //导入自定义路由文件，创建模块
 const session = require('express-session'); // 引入express-session模块，用于服务器端操作session
 const app = express();
 
+const port = process.env.PORT || 3000;
+
+app.use(express.static(path.join(__dirname, 'public'))); // 静态资源
+app.use(bodyParser.json()); // 解析json数据格式
+app.use(bodyParser.urlencoded({extended: true})); // 解析form表单提交的数据application/x-www-form-urlencoded
+
 app.use(cookieParser());
 app.use(session({
 	secret: 'keyboard cat',
@@ -21,16 +27,12 @@ app.use(session({
 	cookie: ('name', 'value', {maxAge:  5 * 60 * 1000, secure: false})
 }));
 
-app.use(express.static(path.join(__dirname, 'public'))); // 静态资源
-app.use(bodyParser.json()); // 解析json数据格式
-app.use(bodyParser.urlencoded({extended: true})); // 解析form表单提交的数据application/x-www-form-urlencoded
-
 app.use(cors()); // 注入cors模块解决跨域
 
 
 app.use('/', routes);
 
 
-app.listen(8089, () => { // 监听8089端口
-	console.log('服务已启动 http://localhost:8089');
+app.listen(port, () => { // 监听3000端口
+	console.log('服务已启动 http://localhost:3000');
 })

@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "crypto": "^1.0.1",
+    "node-uuid": "^1.4.8",
     "nodemon": "^2.0.4"
   },
   "scripts": {

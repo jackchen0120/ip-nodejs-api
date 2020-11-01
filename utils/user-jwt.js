@@ -26,6 +26,8 @@ const jwtAuth = expressJwt({
 }).unless({
   path: [
     '/',
+    '/api/users/getCaptcha',
+    '/api/users/sendCoreCode',
     '/api/users/login',
     '/api/users/register',
     '/api/users/resetPwd'
