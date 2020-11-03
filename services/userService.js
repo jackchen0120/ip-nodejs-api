@@ -68,7 +68,7 @@ const getToken = (username) => {
 // 用户注册
 const regUser = (username) => {
   // 检测用户是否第一次注册
-  let sql = `insert into user(uid, username, accout_type, status, create_time) value('${uuid.v1()}', '${username}', 1, 1, '${(new Date()).valueOf()}')`;
+  let sql = `insert into user(uid, username, accout_type, status, create_time) value('${uuid.v1()}', '${username}', '手机号', 1, '${(new Date()).valueOf()}')`;
   querySql(sql)
     .then(res => {
       console.log('用户注册===', res);
@@ -89,6 +89,11 @@ const regUser = (username) => {
           })
         }
       } else {
+        res.json({
+          code: CODE_ERROR,
+          msg: '注册失败',
+          data: null
+        })
         return false;
       }
     })
@@ -157,7 +162,7 @@ const login = (req, res, next) => {
     // 抛出错误，交给我们自定义的统一异常处理程序进行错误返回 
     next(boom.badRequest(msg));
   } else {
-    let { username, captcha, sms } = req.body;
+    let { phone, captcha, sms } = req.body;
     console.log('req.session===', req.session.captcha)
     if (typeof req.session.captcha == 'undefined') {
       res.json({
@@ -169,25 +174,20 @@ const login = (req, res, next) => {
     }
 
     if (captcha.toLowerCase() == req.session.captcha) {
-      if (sendCodePhone(username)) {
+      if (sendCodePhone(phone)) {
         // 短信验证码和手机号是否匹配
-        let status = findCodeAndPhone(username, sms);
+        let status = findCodeAndPhone(phone, sms);
         if (status == 'login') {
           // 登录成功之后的操作
-          const sql = `select * from user where username='${username}'`;
+          const sql = `select * from user where phone='${phone}'`;
           querySql(sql)
             .then(user => {
               console.log('用户登录===', user);
               if (!user || user.length === 0) {
                 // 用户第一次注册，绑定表
-                regUser(username);
-                // res.json({
-                //   code: CODE_ERROR,
-                //   msg: '用户名或验证码错误',
-                //   data: null
-                // })
+                regUser(phone);
               } else {
-                let token = getToken(username);
+                let token = getToken(phone);
                 let userData = user[0];
 
                 res.json({
@@ -234,7 +234,6 @@ const getCaptcha = (req, res) => {
     height: 30, // 高度
     inverse: false, // 翻转颜色
     fontSize: 40, // 字体大小
-    background: '#cc9966' // 验证码图片背景颜色
   }
   let getImageCode = svgCaptcha.create(codeConfig);
   req.session.captcha = getImageCode.text.toLowerCase();
