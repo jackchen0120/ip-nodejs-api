@@ -32,7 +32,7 @@ const resetPwdVaildator = [
   body('newPassword').isString().withMessage('密码类型错误')
 ]
 
-// 用户登录路由
+// 验证码登录
 router.post('/login', user.login);
 
 // 获取图形验证码
@@ -41,10 +41,10 @@ router.get('/getCaptcha', user.getCaptcha);
 // 发送短信验证码
 router.get('/sendCoreCode', user.sendCoreCode);
 
-// 用户注册路由
-// router.post('/register', vaildator, service.register);
+// 密码登录
+router.post('/loginPwd', user.loginPwd);
 
-// // 密码重置路由
+// 密码重置
 // router.post('/resetPwd', resetPwdVaildator, service.resetPwd);
 
 

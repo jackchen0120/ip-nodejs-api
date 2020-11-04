@@ -30,10 +30,10 @@ const { user } = require('../db/dbConfig');
 
 // 验证手机号是否发过短信验证码
 let validatePhoneCode = [];
-let sendCodePhone = (username) => {
+let sendCodePhone = (phone) => {
   console.log('validatePhoneCode===', validatePhoneCode);
   for (let item of validatePhoneCode) {
-    if (username == item.username) {
+    if (phone == item.phone) {
       return true;
     }
   }
@@ -41,9 +41,9 @@ let sendCodePhone = (username) => {
 }
 
 // 匹配手机号和短信验证码
-let findCodeAndPhone = (username, sms) => {
+let findCodeAndPhone = (phone, sms) => {
   for (let item of validatePhoneCode) {
-    if (username == item.username && sms == item.sms) {
+    if (phone == item.phone && sms == item.sms) {
       return 'login';
     }
   }
@@ -66,22 +66,25 @@ const getToken = (username) => {
 }
 
 // 用户注册
-const regUser = (username) => {
+const regUser = (phone) => {
   // 检测用户是否第一次注册
-  let sql = `insert into user(uid, username, accout_type, status, create_time) value('${uuid.v1()}', '${username}', '手机号', 1, '${(new Date()).valueOf()}')`;
+  let sql = `insert into user(user_id, phone, status, create_time) value('${uuid.v1()}', '${phone}', 1, '${(new Date()).valueOf()}')`;
   querySql(sql)
     .then(res => {
       console.log('用户注册===', res);
       if (res.affectedRows == 1) {
         // 执行成功获取用户信息，获取用户信息的方法
-        let user = getUser(username);
-        if (user) {
-          let token = getToken(username);
+        let user = getUser(phone);
+
+        // 创建用户副表
+        let userinfo = createUserInfo(user[0].user_id);
+        if (userinfo) {
+          let token = getToken(phone);
           let userData = user[0];
 
           res.json({
             code: CODE_SUCCESS,
-            msg: '注册成功',
+            msg: '自动注册成功',
             data: {
               token,
               userData
@@ -91,7 +94,7 @@ const regUser = (username) => {
       } else {
         res.json({
           code: CODE_ERROR,
-          msg: '注册失败',
+          msg: '自动注册失败',
           data: null
         })
         return false;
@@ -99,26 +102,26 @@ const regUser = (username) => {
     })
 }
 
-// 获取用户信息
-const getUser = (username) => {
-  let sql = `select * from user where username='${username}'`;
+// 创建用户副表
+const createUserInfo = (user_id) => {
+  let sql = `insert into user_info(user_id) values('${user_id}')`;
   querySql(sql)
-    .then(user => {
-      if (!user || user.length === 0) {
-        return false;
+    .then(res => {
+      if (res.affectedRows == 1) {
+        return res;
       } else {
-        return user;
+        return false;
       }
     })
 }
 
 // 腾讯云短信验证码
 const sendCoreCode = (req, res) => {
-  let { username } = req.query;
+  let { phone } = req.query;
   let sms = randomCode(1000, 9999);
   let params = {
     'PhoneNumberSet': [
-      `+86${username}`
+      `+86${phone}`
     ],
     'TemplateID': '738936',
     'Sign': '懒人码农',
@@ -140,13 +143,13 @@ const sendCoreCode = (req, res) => {
       return;
     }
     // 请求正常返回，打印response对象
-    console.log('response===', response.to_json_string());
+    // console.log('response===', response.to_json_string());
     res.send({
       code: 200,
       msg: '短信发送成功'
     })
     validatePhoneCode.push({
-      username: username,
+      phone: phone,
       sms: sms
     })
   });
@@ -163,7 +166,7 @@ const login = (req, res, next) => {
     next(boom.badRequest(msg));
   } else {
     let { phone, captcha, sms } = req.body;
-    console.log('req.session===', req.session.captcha)
+    // console.log('req.session===', req.session.captcha)
     if (typeof req.session.captcha == 'undefined') {
       res.json({
         code: -2,
@@ -233,7 +236,7 @@ const getCaptcha = (req, res) => {
     width: 60, // 宽度
     height: 30, // 高度
     inverse: false, // 翻转颜色
-    fontSize: 40, // 字体大小
+    fontSize: 35, // 字体大小
   }
   let getImageCode = svgCaptcha.create(codeConfig);
   req.session.captcha = getImageCode.text.toLowerCase();
@@ -243,71 +246,56 @@ const getCaptcha = (req, res) => {
   res.status(200).send(getImageCode.data);
 }
 
-// 注册
-const register = (req, res, next) => {
+// 密码登录
+const loginPwd = (req, res, next) => {
   const err = validationResult(req);
+  // 如果验证错误，empty不为空
   if (!err.isEmpty()) {
+    // 获取错误信息
     const [{ msg }] = err.errors;
+    // 抛出错误，交给我们自定义的统一异常处理程序进行错误返回 
     next(boom.badRequest(msg));
   } else {
     let { username, password } = req.body;
-    findUser(username)
-      .then(data => {
-        // console.log('用户注册===', data);
-        if (data) {
-          res.json({
-            code: CODE_ERROR,
-            msg: '用户已存在',
-            data: null
-          })
-        } else {
-          password = md5(password);
-          const sql = `insert into sys_user(username, password) values('${username}', '${password}')`;
-          querySql(sql)
-            .then(result => {
-              // console.log('用户注册===', result);
-              if (!result || result.length === 0) {
-                res.json({
-                  code: CODE_ERROR,
-                  msg: '注册失败',
-                  data: null
-                })
-              } else {
-                const queryUser = `select * from sys_user where username='${username}' and password='${password}'`;
-                querySql(queryUser)
-                  .then(user => {
-                    const token = jwt.sign(
-                      { username },
-                      PRIVATE_KEY,
-                      { expiresIn: JWT_EXPIRED }
-                    )
+    // md5加密
+    password = md5(password);
+    console.log('pwd===', password);
+    const sql = `select * from user where username='${username}' or phone='${username}' and password='${password}'`;
+    querySql(sql)
+    .then(user => {
+      // console.log('密码登录===', user);
+      if (!user || user.length === 0) {
+        res.json({ 
+          code: CODE_ERROR, 
+          msg: '用户名或密码错误', 
+          data: null 
+        })
+      } else {
+        let token = getToken(username);
+        let userData = {
+          id: user[0].id,
+          user_id: user[0].user_id,
+          username: user[0].username,
+          nickname: user[0].nickname,
+          phone: user[0].phone,
+          status: user[0].status,
+          create_time: user[0].create_time,
+          update_time: user[0].update_time
+        };
 
-                    let userData = {
-                      id: user[0].id,
-                      username: user[0].username,
-                      nickname: user[0].nickname,
-                      avator: user[0].avator,
-                      sex: user[0].sex,
-                      gmt_create: user[0].gmt_create,
-                      gmt_modify: user[0].gmt_modify
-                    };
-
-                    res.json({
-                      code: CODE_SUCCESS,
-                      msg: '注册成功',
-                      data: {
-                        token,
-                        userData
-                      }
-                    })
-                  })
-              }
-            })
-        }
-      })
-
+        res.json({
+          code: CODE_SUCCESS,
+          msg: '登录成功',
+          data: {
+            token,
+            userData
+          }
+        })
+      }
+    })
   }
 }
+
 
 // 重置密码
 const resetPwd = (req, res, next) => {
@@ -361,15 +349,15 @@ const resetPwd = (req, res, next) => {
   }
 }
 
-// 校验用户名和密码
-const validateUser = (username, oldPassword) => {
-  const sql = `select id, username from sys_user where username='${username}' and password='${oldPassword}'`;
+// 通过用户名或手机号查询用户信息
+const getUser = (username) => {
+  const sql = `select id, user_id, username, phone from user where username='${username}' or phone='${username}'`;
   return queryOne(sql);
 }
 
-// 通过用户名查询用户信息
-const findUser = (username) => {
-  const sql = `select id, username from sys_user where username='${username}'`;
+// 校验用户名和密码
+const validateUser = (username, oldPassword) => {
+  const sql = `select id, username from sys_user where username='${username}' and password='${oldPassword}'`;
   return queryOne(sql);
 }
 
@@ -377,6 +365,6 @@ module.exports = {
   login,
   getCaptcha,
   sendCoreCode,
-  register,
+  loginPwd,
   resetPwd
 }

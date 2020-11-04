@@ -29,7 +29,7 @@ const jwtAuth = expressJwt({
     '/api/users/getCaptcha',
     '/api/users/sendCoreCode',
     '/api/users/login',
-    '/api/users/register',
+    '/api/users/loginPwd',
     '/api/users/resetPwd'
   ]
 })
