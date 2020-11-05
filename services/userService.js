@@ -66,53 +66,32 @@ const getToken = (username) => {
 }
 
 // 用户注册
-const regUser = (phone) => {
+const regUser = async (phone) => {
   // 检测用户是否第一次注册
   let sql = `insert into user(user_id, phone, status, create_time) value('${uuid.v1()}', '${phone}', 1, '${(new Date()).valueOf()}')`;
-  querySql(sql)
-    .then(res => {
-      console.log('用户注册===', res);
-      if (res.affectedRows == 1) {
-        // 执行成功获取用户信息，获取用户信息的方法
-        let user = getUser(phone);
+  let res = await queryOne(sql);
+  
+  console.log('用户注册===', res);
+  if (res.affectedRows == 1) {
+    // 执行成功获取用户信息，获取用户信息的方法
+    let user = await getUser(phone);
 
-        // 创建用户副表
-        let userinfo = createUserInfo(user[0].user_id);
-        if (userinfo) {
-          let token = getToken(phone);
-          let userData = user[0];
-
-          res.json({
-            code: CODE_SUCCESS,
-            msg: '自动注册成功',
-            data: {
-              token,
-              userData
-            }
-          })
-        }
-      } else {
-        res.json({
-          code: CODE_ERROR,
-          msg: '自动注册失败',
-          data: null
-        })
-        return false;
-      }
-    })
+    // 创建用户副表
+    let userinfo = await createUserInfo(user.user_id);
+    if (userinfo.affectedRows == 1) {
+      return user;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
 }
 
 // 创建用户副表
 const createUserInfo = (user_id) => {
   let sql = `insert into user_info(user_id) values('${user_id}')`;
-  querySql(sql)
-    .then(res => {
-      if (res.affectedRows == 1) {
-        return res;
-      } else {
-        return false;
-      }
-    })
+  return queryOne(sql);
 }
 
 // 腾讯云短信验证码
@@ -156,7 +135,7 @@ const sendCoreCode = (req, res) => {
 }
 
 // 验证码登录
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
   const err = validationResult(req);
   // 如果验证错误，empty不为空
   if (!err.isEmpty()) {
@@ -183,26 +162,43 @@ const login = (req, res, next) => {
         if (status == 'login') {
           // 登录成功之后的操作
           const sql = `select * from user where phone='${phone}'`;
-          querySql(sql)
-            .then(user => {
-              console.log('用户登录===', user);
-              if (!user || user.length === 0) {
-                // 用户第一次注册，绑定表
-                regUser(phone);
-              } else {
-                let token = getToken(phone);
-                let userData = user[0];
+          let user = await queryOne(sql);
+          console.log('验证码登录===', user);
+          if (user) {
+            let token = getToken(phone);
 
-                res.json({
-                  code: CODE_SUCCESS,
-                  msg: '登录成功',
-                  data: {
-                    token,
-                    userData
-                  }
-                })
+            res.json({
+              code: CODE_SUCCESS,
+              msg: '登录成功',
+              data: {
+                token,
+                user
               }
             })
+          } else {
+            // 用户第一次注册，绑定表
+            let newUser = await regUser(phone);
+            // 获取用户详情
+            newUser.userinfo = await getUserInfo(newUser.user_id);
+            if (newUser) {
+              let token = getToken(phone);
+
+              res.json({
+                code: CODE_SUCCESS,
+                msg: '自动注册成功',
+                data: {
+                  token,
+                  newUser
+                }
+              })
+            } else {
+              res.json({
+                code: CODE_ERROR,
+                msg: '自动注册失败',
+                data: null
+              })
+            }
+          }
         } else if (status == 'error') {
           res.json({
             code: CODE_ERROR,
@@ -247,7 +243,7 @@ const getCaptcha = (req, res) => {
 }
 
 // 密码登录
-const loginPwd = (req, res, next) => {
+const loginPwd = async (req, res, next) => {
   const err = validationResult(req);
   // 如果验证错误，empty不为空
   if (!err.isEmpty()) {
@@ -261,38 +257,35 @@ const loginPwd = (req, res, next) => {
     password = md5(password);
     console.log('pwd===', password);
     const sql = `select * from user where username='${username}' or phone='${username}' and password='${password}'`;
-    querySql(sql)
-    .then(user => {
-      // console.log('密码登录===', user);
-      if (!user || user.length === 0) {
-        res.json({ 
-          code: CODE_ERROR, 
-          msg: '用户名或密码错误', 
-          data: null 
-        })
-      } else {
-        let token = getToken(username);
-        let userData = {
-          id: user[0].id,
-          user_id: user[0].user_id,
-          username: user[0].username,
-          nickname: user[0].nickname,
-          phone: user[0].phone,
-          status: user[0].status,
-          create_time: user[0].create_time,
-          update_time: user[0].update_time
-        };
+    let user = await queryOne(sql);
+    if (user) {
+      let token = getToken(username);
+      let userinfo = {
+        id: user.id,
+        user_id: user.user_id,
+        username: user.username,
+        nickname: user.nickname,
+        phone: user.phone,
+        status: user.status,
+        create_time: user.create_time,
+        update_time: user.update_time
+      };
 
-        res.json({
-          code: CODE_SUCCESS,
-          msg: '登录成功',
-          data: {
-            token,
-            userData
-          }
-        })
-      }
-    })
+      res.json({
+        code: CODE_SUCCESS,
+        msg: '登录成功',
+        data: {
+          token,
+          userinfo
+        }
+      })
+    } else {
+      res.json({ 
+        code: CODE_ERROR, 
+        msg: '用户名或密码错误', 
+        data: null 
+      })
+    }
   }
 }
 
@@ -349,10 +342,16 @@ const resetPwd = (req, res, next) => {
   }
 }
 
-// 通过用户名或手机号查询用户信息
+// 通过用户名或手机号查询用户表
 const getUser = (username) => {
   const sql = `select id, user_id, username, phone from user where username='${username}' or phone='${username}'`;
   return queryOne(sql);
+}
+
+// 获取注册的用户详情
+const getUserInfo = (user_id) => {
+    let sql = `select age, sex, job, address, birthday from user_info where user_id='${user_id}'`;
+    return queryOne(sql);
 }
 
 // 校验用户名和密码
