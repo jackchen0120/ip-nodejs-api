@@ -49,9 +49,9 @@ const querySql = (sql) => {
 const queryOne = (sql) => {
   return new Promise((resolve, reject) => {
     querySql(sql).then(res => {
-      console.log('res===',res)
-      if (res && res.length > 0) {
-        resolve(res[0]);
+      console.log('sql===', res)
+      if ((res && res.length > 0) || res.affectedRows == 1) {
+        resolve(res);
       } else {
         resolve(null);
       }

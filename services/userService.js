@@ -77,7 +77,7 @@ const regUser = async (phone) => {
     let user = await getUser(phone);
 
     // 创建用户副表
-    let userinfo = await createUserInfo(user.user_id);
+    let userinfo = await createUserInfo(user[0].user_id);
     if (userinfo.affectedRows == 1) {
       return user;
     } else {
@@ -161,34 +161,23 @@ const login = async (req, res, next) => {
         let status = findCodeAndPhone(phone, sms);
         if (status == 'login') {
           // 登录成功之后的操作
-          const sql = `select * from user where phone='${phone}'`;
+          const sql = `select id, user_id, username, phone, status, create_time, update_time from user where phone='${phone}'`;
           let user = await queryOne(sql);
           console.log('验证码登录===', user);
-          if (user) {
-            let token = getToken(phone);
-
-            res.json({
-              code: CODE_SUCCESS,
-              msg: '登录成功',
-              data: {
-                token,
-                user
-              }
-            })
-          } else {
+          if (!user || user.length == 0) {
             // 用户第一次注册，绑定表
             let newUser = await regUser(phone);
-            // 获取用户详情
-            newUser.userinfo = await getUserInfo(newUser.user_id);
-            if (newUser) {
+            
+            if (newUser && newUser.length > 0) {
               let token = getToken(phone);
+              let userinfo = newUser[0];
 
               res.json({
                 code: CODE_SUCCESS,
                 msg: '自动注册成功',
                 data: {
                   token,
-                  newUser
+                  userinfo
                 }
               })
             } else {
@@ -198,6 +187,18 @@ const login = async (req, res, next) => {
                 data: null
               })
             }
+          } else {
+            let token = getToken(phone);
+            let userinfo = user[0];
+
+            res.json({
+              code: CODE_SUCCESS,
+              msg: '登录成功',
+              data: {
+                token,
+                userinfo
+              }
+            })
           }
         } else if (status == 'error') {
           res.json({
@@ -256,20 +257,17 @@ const loginPwd = async (req, res, next) => {
     // md5加密
     password = md5(password);
     console.log('pwd===', password);
-    const sql = `select * from user where username='${username}' or phone='${username}' and password='${password}'`;
+    const sql = `select id, user_id, username, phone, status, create_time, update_time from user where username='${username}' or phone='${username}' and password='${password}'`;
     let user = await queryOne(sql);
-    if (user) {
+    if (!user && user.length == 0) {
+      res.json({ 
+        code: CODE_ERROR, 
+        msg: '用户名或密码错误', 
+        data: null 
+      })
+    } else {
       let token = getToken(username);
-      let userinfo = {
-        id: user.id,
-        user_id: user.user_id,
-        username: user.username,
-        nickname: user.nickname,
-        phone: user.phone,
-        status: user.status,
-        create_time: user.create_time,
-        update_time: user.update_time
-      };
+      let userinfo = user[0];
 
       res.json({
         code: CODE_SUCCESS,
@@ -278,12 +276,6 @@ const loginPwd = async (req, res, next) => {
           token,
           userinfo
         }
-      })
-    } else {
-      res.json({ 
-        code: CODE_ERROR, 
-        msg: '用户名或密码错误', 
-        data: null 
       })
     }
   }
@@ -344,13 +336,13 @@ const resetPwd = (req, res, next) => {
 
 // 通过用户名或手机号查询用户表
 const getUser = (username) => {
-  const sql = `select id, user_id, username, phone from user where username='${username}' or phone='${username}'`;
+  const sql = `select id, user_id, username, phone, status, create_time, update_time from user where username='${username}' or phone='${username}'`;
   return queryOne(sql);
 }
 
 // 获取注册的用户详情
 const getUserInfo = (user_id) => {
-    let sql = `select age, sex, job, address, birthday from user_info where user_id='${user_id}'`;
+    let sql = `select * from user_info where user_id='${user_id}'`;
     return queryOne(sql);
 }
 
