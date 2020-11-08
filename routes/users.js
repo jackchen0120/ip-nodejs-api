@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const user = require('../services/userService');
+const auth = require('../services/authService');
 
 const fs = require('fs');
 const multer = require('multer');
@@ -43,6 +44,9 @@ router.get('/sendCoreCode', user.sendCoreCode);
 
 // 密码登录
 router.post('/loginPwd', user.loginPwd);
+
+// github登录
+router.get('/oauthGithub', auth.oauthGithub);
 
 // 密码重置
 // router.post('/resetPwd', resetPwdVaildator, service.resetPwd);

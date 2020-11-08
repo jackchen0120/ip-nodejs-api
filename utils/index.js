@@ -13,6 +13,18 @@ const randomCode = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
+// github配置
+const githubConfig = {
+    oauth_uri: 'https://github.com/login/oauth/authorize',
+    access_token_url: 'https://github.com/login/oauth/access_token',
+    // 获取 github 用户信息 url // eg: https://api.github.com/user?access_token=******&scope=&token_type=bearer
+    user_url: 'https://api.github.com/user',
+
+    redirect_uri: "http://localhost:8080",
+    client_id: '6f555f8eb5c6677a6f0b',
+    client_secret: '5c7284c91cae13f6be05980716788cec6dafd960',
+};
+
 // 连接mysql
 const connect = () => {
   const { host, user, password, database } = config;
@@ -64,5 +76,6 @@ const queryOne = (sql) => {
 module.exports = {
   querySql,
   queryOne,
-  randomCode
+  randomCode,
+  githubConfig
 }

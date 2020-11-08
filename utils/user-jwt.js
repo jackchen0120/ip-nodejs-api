@@ -30,6 +30,7 @@ const jwtAuth = expressJwt({
     '/api/users/sendCoreCode',
     '/api/users/login',
     '/api/users/loginPwd',
+    '/api/users/oauthGithub',
     '/api/users/resetPwd'
   ]
 })

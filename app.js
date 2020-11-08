@@ -13,6 +13,7 @@ const routes = require('./routes'); //导入自定义路由文件，创建模块
 const session = require('express-session'); // 引入express-session模块，用于服务器端操作session
 const app = express();
 
+
 const port = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public'))); // 静态资源

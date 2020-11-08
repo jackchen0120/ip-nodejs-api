@@ -8,8 +8,7 @@
 const { 
   querySql, 
   queryOne, 
-  randomCode, 
-  generateUUID 
+  randomCode 
 } = require('../utils/index');
 const md5 = require('../utils/md5');
 const jwt = require('jsonwebtoken');
@@ -26,6 +25,7 @@ const svgCaptcha = require('svg-captcha');
 const smsConfig = require('../utils/smsConfig');
 const uuid = require('node-uuid');
 const { user } = require('../db/dbConfig');
+const moment = require('moment');
 
 
 // 验证手机号是否发过短信验证码
@@ -68,7 +68,7 @@ const getToken = (username) => {
 // 用户注册
 const regUser = async (phone) => {
   // 检测用户是否第一次注册
-  let sql = `insert into user(user_id, phone, status, create_time) value('${uuid.v1()}', '${phone}', 1, '${(new Date()).valueOf()}')`;
+  let sql = `insert into user(user_id, phone, status, create_time) value('${uuid.v1()}', '${phone}', 1, '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
   let res = await queryOne(sql);
   
   console.log('用户注册===', res);
