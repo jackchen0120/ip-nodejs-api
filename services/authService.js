@@ -19,6 +19,21 @@ const axios = require('axios');
 const moment = require('moment');
 
 
+// 获取token
+const getToken = (username) => {
+	// 登录成功，签发一个token并返回给前端
+	let token = jwt.sign(
+	  // payload：签发的 token 里面要包含的一些数据。
+	  { username },
+	  // 私钥
+	  PRIVATE_KEY,
+	  // 设置过期时间
+	  { expiresIn: JWT_EXPIRED }
+	)
+  
+	return token;
+  }
+
 // github登录
 const oauthGithub = async (req, res, next) => {
   const err = validationResult(req);
@@ -39,27 +54,27 @@ const oauthGithub = async (req, res, next) => {
 	})
 
 	console.log('accessToken===', tokenResponse.data.access_token);
-	let token = tokenResponse.data.access_token;
+	let accessToken = tokenResponse.data.access_token;
 
-	if (token) {
+	if (accessToken) {
 	let result = await axios({
 	  method: 'get',
 	  url: `${githubConfig.user_url}`,
 	  headers: {
 	    accept: 'application/json',
-	    Authorization: `token ${token}`,
+	    Authorization: `token ${accessToken}`,
 	    'User-Agent': 'jackchen0120'
 	  }
 	})
 
 	// console.log('result===', result.data);
-
+	let token = getToken(accessToken);
 	if (result.status == 200) {
 		let user = await validateAuthUser(result.data.id);
 		console.log('user=========', user);
 		if (user) {
 			user[0].login_times += 1;
-			let updateAuthUser = await setAuthUser(result.data, 3, token, 0, user[0].login_times);
+			let updateAuthUser = await setAuthUser(result.data, 3, accessToken, 0, user[0].login_times);
 			if (updateAuthUser.affectedRows == 1) {
 				let userinfo = {
 					id: user[0].id,
@@ -91,7 +106,7 @@ const oauthGithub = async (req, res, next) => {
 			  	})
 			}
 		} else {
-			let addAuthUser = await setAuthUser(result.data, 3, token, 1, null);
+			let addAuthUser = await setAuthUser(result.data, 3, accessToken, 1, null);
 			console.log('addAuthUser===', addAuthUser);
 			if (addAuthUser.affectedRows == 1) {
 				let queryUser = await getAuthUser(addAuthUser.insertId);
@@ -153,6 +168,7 @@ const getAuthUser = (id) => {
 	return queryOne(sql);
 }
 
+// 更新或新增用户信息
 const setAuthUser = (user, type, accessToken, status, loginTimes) => {
 	let sql = '';
 	if (status == 0) {

@@ -48,6 +48,12 @@ router.post('/loginPwd', user.loginPwd);
 // github登录
 router.get('/oauthGithub', auth.oauthGithub);
 
+// 获取个人信息
+router.get('/getMemberInfo', user.getMemberInfo);
+
+// 修改个人信息
+router.post('/modifyUser', user.modifyUser);
+
 // 密码重置
 // router.post('/resetPwd', resetPwdVaildator, service.resetPwd);
 

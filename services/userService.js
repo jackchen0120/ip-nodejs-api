@@ -259,13 +259,8 @@ const loginPwd = async (req, res, next) => {
     console.log('pwd===', password);
     const sql = `select id, user_id, username, phone, status, create_time, update_time from user where username='${username}' or phone='${username}' and password='${password}'`;
     let user = await queryOne(sql);
-    if (!user && user.length == 0) {
-      res.json({ 
-        code: CODE_ERROR, 
-        msg: '用户名或密码错误', 
-        data: null 
-      })
-    } else {
+    console.log(user);
+    if (user) {
       let token = getToken(username);
       let userinfo = user[0];
 
@@ -276,6 +271,12 @@ const loginPwd = async (req, res, next) => {
           token,
           userinfo
         }
+      })
+    } else {
+      res.json({ 
+        code: CODE_ERROR, 
+        msg: '用户名或密码错误', 
+        data: null 
       })
     }
   }
@@ -352,10 +353,84 @@ const validateUser = (username, oldPassword) => {
   return queryOne(sql);
 }
 
+// 获取用户个人信息
+const getMemberInfo = async (req, res, next) => {
+  const err = validationResult(req);
+  if (!err.isEmpty()) {
+    const [{ msg }] = err.errors;
+    next(boom.badRequest(msg));
+  } else {
+    let { user_id } = req.query;
+    let userinfo = await getUserInfo(user_id);
+    console.log('userinfo===', userinfo);
+
+    if (userinfo) {
+      res.send({
+        code: CODE_SUCCESS,
+        msg: '获取个人信息成功',
+        data: userinfo[0]
+      })
+    } else {
+      res.send({
+        code: CODE_ERROR,
+        msg: '获取个人信息失败',
+        data: null
+      })
+    }
+  }
+}
+
+// 修改或更新用户个人信息
+const modifyUser = async (req, res, next) => {
+  const err = validationResult(req);
+  if (!err.isEmpty()) {
+    const [{ msg }] = err.errors;
+    next(boom.badRequest(msg));
+  } else {
+    let { user_id, avatar, nickname, age, sex, birthday, area, address } = req.body;
+    let userinfo = await getUserInfo(openid);
+
+    if (userinfo) {
+      const sql = `update user_info set avatar='${avatar}', nickname='${nickname}', age='${age}', sex='${sex}', birthday='${birthday}', area='${area}', address='${address}' where user_id='${user_id}'`;
+      let updateInfo = await queryOne(sql);
+
+      if (updateInfo) {
+        res.send({
+          code: CODE_SUCCESS,
+          msg: '修改个人资料成功'
+        })
+      } else {
+        res.send({
+          code: CODE_ERROR,
+          msg: '修改个人资料失败'
+        })
+      }
+    } else {
+      const sql = `insert into user_info(user_id, avatar, nickname, age, sex, birthday, area, address) values('${user_id}', '${avatar}', '${nickname}', '${age}', '${sex}', '${birthday}', '${area}', '${address}')`;
+      let insertInfo = await queryOne(sql);
+
+      if (insertInfo) {
+        res.send({
+          code: CODE_SUCCESS,
+          msg: '更新个人资料成功'
+        })
+      } else {
+        res.send({
+          code: CODE_ERROR,
+          msg: '更新个人资料失败'
+        })
+      }
+    }
+    
+  }
+}
+
 module.exports = {
   login,
   getCaptcha,
   sendCoreCode,
   loginPwd,
-  resetPwd
+  resetPwd,
+  modifyUser,
+  getMemberInfo
 }
