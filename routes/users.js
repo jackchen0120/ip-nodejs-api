@@ -48,6 +48,9 @@ router.post('/loginPwd', user.loginPwd);
 // github登录
 router.get('/oauthGithub', auth.oauthGithub);
 
+// weibo登录
+router.get('/oauthWeibo', auth.oauthWeibo);
+
 // 获取个人信息
 router.get('/getMemberInfo', user.getMemberInfo);
 

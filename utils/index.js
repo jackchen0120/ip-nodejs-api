@@ -15,7 +15,7 @@ const randomCode = (min, max) => {
 
 // github配置
 const githubConfig = {
-    oauth_uri: 'https://github.com/login/oauth/authorize',
+    // oauth_uri: 'https://github.com/login/oauth/authorize',
     access_token_url: 'https://github.com/login/oauth/access_token',
     // 获取 github 用户信息 url // eg: https://api.github.com/user?access_token=******&scope=&token_type=bearer
     user_url: 'https://api.github.com/user',
@@ -23,6 +23,18 @@ const githubConfig = {
     redirect_uri: "http://localhost:8080",
     client_id: '6f555f8eb5c6677a6f0b',
     client_secret: '5c7284c91cae13f6be05980716788cec6dafd960',
+};
+
+// weibo配置
+const weiboConfig = {
+  // oauth_uri: 'https://api.weibo.com/oauth2/authorize',
+  access_token_url: 'https://api.weibo.com/oauth2/access_token',
+  // 获取 weibo 用户信息 url // eg: https://api.weibo.com/2/users/show.json?access_token=******&uid=******
+  user_url: 'https://api.weibo.com/2/users/show.json',
+  
+  redirect_uri: "http://106.55.168.13",
+  client_id: '4147359527',
+  client_secret: 'f4441b579047a391254994680385fcf1',
 };
 
 // 连接mysql
@@ -77,5 +89,6 @@ module.exports = {
   querySql,
   queryOne,
   randomCode,
-  githubConfig
+  githubConfig,
+  weiboConfig
 }

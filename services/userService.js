@@ -24,7 +24,6 @@ const { decode } = require('../utils/user-jwt');
 const svgCaptcha = require('svg-captcha');
 const smsConfig = require('../utils/smsConfig');
 const uuid = require('node-uuid');
-const { user } = require('../db/dbConfig');
 const moment = require('moment');
 
 
@@ -237,7 +236,7 @@ const getCaptcha = (req, res) => {
   }
   let getImageCode = svgCaptcha.create(codeConfig);
   req.session.captcha = getImageCode.text.toLowerCase();
-  console.log('captcha===', req.session);
+  // console.log('captcha===', req.session);
 
   res.type('svg');
   res.status(200).send(getImageCode.data);
@@ -353,7 +352,7 @@ const validateUser = (username, oldPassword) => {
   return queryOne(sql);
 }
 
-// 获取用户个人信息
+// 查看用户个人信息
 const getMemberInfo = async (req, res, next) => {
   const err = validationResult(req);
   if (!err.isEmpty()) {
@@ -380,7 +379,7 @@ const getMemberInfo = async (req, res, next) => {
   }
 }
 
-// 修改或更新用户个人信息
+// 编辑用户个人信息
 const modifyUser = async (req, res, next) => {
   const err = validationResult(req);
   if (!err.isEmpty()) {
@@ -388,7 +387,7 @@ const modifyUser = async (req, res, next) => {
     next(boom.badRequest(msg));
   } else {
     let { user_id, avatar, nickname, age, sex, birthday, area, address } = req.body;
-    let userinfo = await getUserInfo(openid);
+    let userinfo = await getUserInfo(user_id);
 
     if (userinfo) {
       const sql = `update user_info set avatar='${avatar}', nickname='${nickname}', age='${age}', sex='${sex}', birthday='${birthday}', area='${area}', address='${address}' where user_id='${user_id}'`;
@@ -397,29 +396,19 @@ const modifyUser = async (req, res, next) => {
       if (updateInfo) {
         res.send({
           code: CODE_SUCCESS,
-          msg: '修改个人资料成功'
+          msg: '修改个人信息成功'
         })
       } else {
         res.send({
           code: CODE_ERROR,
-          msg: '修改个人资料失败'
+          msg: '修改个人信息失败'
         })
       }
     } else {
-      const sql = `insert into user_info(user_id, avatar, nickname, age, sex, birthday, area, address) values('${user_id}', '${avatar}', '${nickname}', '${age}', '${sex}', '${birthday}', '${area}', '${address}')`;
-      let insertInfo = await queryOne(sql);
-
-      if (insertInfo) {
-        res.send({
-          code: CODE_SUCCESS,
-          msg: '更新个人资料成功'
-        })
-      } else {
-        res.send({
-          code: CODE_ERROR,
-          msg: '更新个人资料失败'
-        })
-      }
+      res.send({
+        code: CODE_ERROR,
+        msg: '查询个人信息失败'
+      })
     }
     
   }
