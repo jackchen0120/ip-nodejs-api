@@ -283,7 +283,7 @@ const loginPwd = async (req, res, next) => {
 
 
 // 重置密码
-const resetPwd = (req, res, next) => {
+const resetPwd = async (req, res, next) => {
   const err = validationResult(req);
   if (!err.isEmpty()) {
     const [{ msg }] = err.errors;
@@ -291,46 +291,45 @@ const resetPwd = (req, res, next) => {
   } else {
     let { username, oldPassword, newPassword } = req.body;
     oldPassword = md5(oldPassword);
-    validateUser(username, oldPassword)
-      .then(data => {
-        console.log('校验用户名和密码===', data);
-        if (data) {
-          if (newPassword) {
-            newPassword = md5(newPassword);
-            const sql = `update sys_user set password='${newPassword}' where username='${username}'`;
-            querySql(sql)
-              .then(user => {
-                // console.log('密码重置===', user);
-                if (!user || user.length === 0) {
-                  res.json({
-                    code: CODE_ERROR,
-                    msg: '重置密码失败',
-                    data: null
-                  })
-                } else {
-                  res.json({
-                    code: CODE_SUCCESS,
-                    msg: '重置密码成功',
-                    data: null
-                  })
-                }
+    let validUser = await validateUser(username, oldPassword);
+    
+    console.log('校验用户名和密码===', validUser);
+    if (validUser) {
+      if (newPassword) {
+        newPassword = md5(newPassword);
+        const sql = `update user set password='${newPassword}' where username='${username}' or phone='${username}'`;
+        querySql(sql)
+          .then(user => {
+            // console.log('密码重置===', user);
+            if (!user || user.length === 0) {
+              res.json({
+                code: CODE_ERROR,
+                msg: '重置密码失败',
+                data: null
               })
-          } else {
-            res.json({
-              code: CODE_ERROR,
-              msg: '新密码不能为空',
-              data: null
-            })
-          }
-        } else {
-          res.json({
-            code: CODE_ERROR,
-            msg: '用户名或旧密码错误',
-            data: null
+            } else {
+              res.json({
+                code: CODE_SUCCESS,
+                msg: '重置密码成功',
+                data: null
+              })
+            }
           })
-        }
-      })
+      } else {
+        res.json({
+          code: CODE_ERROR,
+          msg: '新密码不能为空',
+          data: null
+        })
+      }
 
+    } else {
+      res.json({
+        code: CODE_ERROR,
+        msg: '用户名或旧密码错误',
+        data: null
+      })
+    }
   }
 }
 
@@ -348,7 +347,7 @@ const getUserInfo = (user_id) => {
 
 // 校验用户名和密码
 const validateUser = (username, oldPassword) => {
-  const sql = `select id, username from sys_user where username='${username}' and password='${oldPassword}'`;
+  const sql = `select id, username from user where username='${username}' or phone='${username}' and password='${oldPassword}'`;
   return queryOne(sql);
 }
 

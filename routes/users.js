@@ -15,23 +15,17 @@ const multer = require('multer');
 const upload = multer({
     dest: './public/uploads/'
 }).single('avatar');
-const uploadMore = multer({
-    dest: './public/uploads/'
-}).array('file', 5);
+// const uploadMore = multer({
+//     dest: './public/uploads/'
+// }).array('file', 5);
 
-
-// 登录/注册校验
-// const vaildator = [
-//   body('username').isString().withMessage('用户名类型错误'),
-//   body('password').isString().withMessage('密码类型错误')
-// ]
 
 // 重置密码校验
-const resetPwdVaildator = [
-  body('username').isString().withMessage('用户名类型错误'),
-  body('oldPassword').isString().withMessage('密码类型错误'),
-  body('newPassword').isString().withMessage('密码类型错误')
-]
+// const resetPwdVaildator = [
+//   body('username').isString().withMessage('用户名类型错误'),
+//   body('oldPassword').isString().withMessage('密码类型错误'),
+//   body('newPassword').isString().withMessage('密码类型错误')
+// ]
 
 // 验证码登录
 router.post('/login', user.login);
