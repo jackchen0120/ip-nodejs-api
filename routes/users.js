@@ -6,15 +6,14 @@
 
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
+// const { body } = require('express-validator');
 const user = require('../services/userService');
 const auth = require('../services/authService');
 
-const fs = require('fs');
 const multer = require('multer');
 const upload = multer({
     dest: './public/uploads/'
-}).single('avatar');
+}).single('file');
 // const uploadMore = multer({
 //     dest: './public/uploads/'
 // }).array('file', 5);
@@ -50,6 +49,9 @@ router.get('/getMemberInfo', user.getMemberInfo);
 
 // 修改个人信息
 router.post('/modifyUser', user.modifyUser);
+
+// 上传头像
+router.post('/editUserAvatar', upload, user.editUserAvatar);
 
 // 密码重置
 // router.post('/resetPwd', resetPwdVaildator, service.resetPwd);

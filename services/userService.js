@@ -13,6 +13,7 @@ const {
 const md5 = require('../utils/md5');
 const jwt = require('jsonwebtoken');
 const boom = require('boom');
+const fs = require('fs');
 const { body, validationResult } = require('express-validator');
 const {
   CODE_ERROR,
@@ -20,7 +21,7 @@ const {
   PRIVATE_KEY,
   JWT_EXPIRED
 } = require('../utils/constant');
-const { decode } = require('../utils/user-jwt');
+// const { decode } = require('../utils/user-jwt');
 const svgCaptcha = require('svg-captcha');
 const smsConfig = require('../utils/smsConfig');
 const uuid = require('node-uuid');
@@ -413,6 +414,77 @@ const modifyUser = async (req, res, next) => {
   }
 }
 
+// 修改头像（单图上传）
+const editUserAvatar = async (req, res, next) => {
+  const err = validationResult(req);
+  if (!err.isEmpty()) {
+    const [{ msg }] = err.errors;
+    next(boom.badRequest(msg));
+  } else {
+    let file = req.file;
+    if (file) {
+        // 存储上传对象信息
+        let fileInfo = {};
+        // 修改名字，第一个参数为旧路径，第二个参数为新路径（注意：旧路径要和上面的dest保持一致）
+        fs.renameSync('./public/uploads/' + file.filename, './public/uploads/' + file.originalname);
+        // 获取文件信息
+        fileInfo.mimetype = file.mimetype;
+        fileInfo.originalname = file.originalname;
+        fileInfo.size = file.size;
+        fileInfo.path = file.path;
+
+        // 设置响应类型及编码
+        res.set({
+            'content-type': 'application/json; charset=utf-8'
+        })
+
+        let { user_id } = req.body;
+        let imgUrl = '/uploads/' + file.originalname;
+        
+        if (user_id) {
+            let sql = `update user_image set url='${imgUrl}', create_time='${moment().format('YYYY-MM-DD HH:mm:ss')}' where user_id='${user_id}'`;
+            let image = await queryOne(sql);
+
+            if (image) {
+              res.send({
+                code: CODE_SUCCESS,
+                msg: '上传头像成功',
+                data: imgUrl
+              })
+            } else {
+              console.log(image)
+              res.send({
+                code: CODE_ERROR,
+                msg: '用户user_id不存在'
+              })
+            }
+            
+        } else {
+            res.send({
+                code: CODE_ERROR,
+                msg: 'user_id不能为空'
+            })
+        }
+      
+    } else {
+        // 判断图片文件是否存在
+        res.send({
+            code: CODE_ERROR,
+            msg: '上传文件不能为空'
+        })
+        return;
+    }
+
+  }
+  
+}
+
+// 获取图片详情
+const getImageDetail = (user_id) => {
+  let sql = `select * from user_image where user_id='${user_id}'`;
+  return queryOne(sql);
+}
+
 module.exports = {
   login,
   getCaptcha,
@@ -420,5 +492,6 @@ module.exports = {
   loginPwd,
   resetPwd,
   modifyUser,
-  getMemberInfo
+  getMemberInfo,
+  editUserAvatar
 }
