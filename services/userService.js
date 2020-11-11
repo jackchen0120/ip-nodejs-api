@@ -387,7 +387,7 @@ const modifyUser = async (req, res, next) => {
   } else {
     let { user_id, avatar, nickname, age, sex, birthday, area, address } = req.body;
     let userinfo = await getUserInfo(user_id);
-
+    
     if (userinfo) {
       const sql = `update user_info set avatar='${avatar}', nickname='${nickname}', age='${age}', sex='${sex}', birthday='${birthday}', area='${area}', address='${address}' where user_id='${user_id}'`;
       let updateInfo = await queryOne(sql);
