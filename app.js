@@ -16,7 +16,7 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public'))); // 静态资源
+app.use('/static', express.static(path.join(__dirname, 'public'))); // 静态资源
 app.use(bodyParser.json()); // 解析json数据格式
 app.use(bodyParser.urlencoded({extended: true})); // 解析form表单提交的数据application/x-www-form-urlencoded
 

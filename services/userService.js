@@ -386,11 +386,11 @@ const modifyUser = async (req, res, next) => {
     const [{ msg }] = err.errors;
     next(boom.badRequest(msg));
   } else {
-    let { user_id, avatar, nickname, age, sex, birthday, area, address } = req.body;
+    let { user_id, avatar, nickname, age, sex, birthday, area, address, code } = req.body;
     let userinfo = await getUserInfo(user_id);
     
     if (userinfo) {
-      const sql = `update user_info set avatar='${avatar}', nickname='${nickname}', age='${age}', sex='${sex}', birthday='${birthday}', area='${area}', address='${address}' where user_id='${user_id}'`;
+      const sql = `update user_info set avatar='${avatar}', nickname='${nickname}', age='${age}', sex='${sex}', birthday='${birthday}', area='${area}', code='${code}', address='${address}' where user_id='${user_id}'`;
       let updateInfo = await queryOne(sql);
 
       if (updateInfo) {
@@ -421,6 +421,7 @@ const editUserAvatar = async (req, res, next) => {
     const [{ msg }] = err.errors;
     next(boom.badRequest(msg));
   } else {
+    console.log('req.file===', req);
     let file = req.file;
     if (file) {
         // 存储上传对象信息
@@ -439,7 +440,7 @@ const editUserAvatar = async (req, res, next) => {
         })
 
         let { user_id } = req.body;
-        let imgUrl = '/uploads/' + file.originalname;
+        let imgUrl = 'http://localhost:3000/uploads/' + file.originalname;
         
         if (user_id) {
             let sql = `update user_image set url='${imgUrl}', create_time='${moment().format('YYYY-MM-DD HH:mm:ss')}' where user_id='${user_id}'`;
@@ -449,7 +450,7 @@ const editUserAvatar = async (req, res, next) => {
               res.send({
                 code: CODE_SUCCESS,
                 msg: '上传头像成功',
-                data: imgUrl
+                url: imgUrl
               })
             } else {
               console.log(image)
