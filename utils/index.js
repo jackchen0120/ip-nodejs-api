@@ -7,6 +7,7 @@
 
 const mysql = require('mysql');
 const config = require('../db/dbConfig');
+const redirect_uri = 'http://106.55.168.13';
 
 // 获取随机验证码
 const randomCode = (min, max) => {
@@ -20,7 +21,7 @@ const githubConfig = {
     // 获取 github 用户信息 url // eg: https://api.github.com/user?access_token=******&scope=&token_type=bearer
     user_url: 'https://api.github.com/user',
 
-    redirect_uri: 'http://106.55.168.13',
+    redirect_uri: redirect_uri,
     client_id: '6f555f8eb5c6677a6f0b',
     client_secret: '5c7284c91cae13f6be05980716788cec6dafd960',
 };
@@ -32,7 +33,7 @@ const weiboConfig = {
   // 获取 weibo 用户信息 url // eg: https://api.weibo.com/2/users/show.json?access_token=******&uid=******
   user_url: 'https://api.weibo.com/2/users/show.json',
   
-  redirect_uri: 'http://106.55.168.13',
+  redirect_uri: redirect_uri,
   client_id: '4147359527',
   client_secret: 'f4441b579047a391254994680385fcf1',
 };
