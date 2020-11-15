@@ -1,3 +1,10 @@
+/**
+ * 描述: 业务逻辑处理 - 第三方登录接口
+ * 作者: Jack Chen
+ * 日期: 2020-11-15
+*/
+
+
 const {
   querySql,
   queryOne,

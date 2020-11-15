@@ -1,3 +1,9 @@
+/**
+ * 描述: 腾讯云短信接入Nodejs SDK
+ * 作者: Jack Chen
+ * 日期: 2020-11-01
+*/
+
 const tencentcloud = require("tencentcloud-sdk-nodejs");
 
 // 导入对应产品模块的client models。

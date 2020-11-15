@@ -1,5 +1,5 @@
 /**
- * 描述: 入口文件
+ * 描述: 程序入口文件
  * 作者: Jack Chen
  * 日期: 2020-06-12
 */
@@ -13,10 +13,9 @@ const routes = require('./routes'); //导入自定义路由文件，创建模块
 const session = require('express-session'); // 引入express-session模块，用于服务器端操作session
 const app = express();
 
-
 const port = process.env.PORT || 3000;
 
-app.use('/static', express.static(path.join(__dirname, 'public'))); // 静态资源
+app.use(express.static(path.join(__dirname, 'public'))); // 静态资源
 app.use(bodyParser.json()); // 解析json数据格式
 app.use(bodyParser.urlencoded({extended: true})); // 解析form表单提交的数据application/x-www-form-urlencoded
 

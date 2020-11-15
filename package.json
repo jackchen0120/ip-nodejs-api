@@ -1,7 +1,7 @@
 {
   "name": "ip-nodejs-api",
   "version": "1.0.0",
-  "description": "IP移动端完整项目后端部分技术栈基于nodejs+mysql+express框架实现restful api接口功能",
+  "description": "H5移动端完整商城项目后端技术栈基于nodejs+mysql+express框架实现restful api接口功能，不断完善优化",
   "author": "JackChen <278910933@qq.com>",
   "main": "index.js",
   "dependencies": {

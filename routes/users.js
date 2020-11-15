@@ -6,7 +6,6 @@
 
 const express = require('express');
 const router = express.Router();
-// const { body } = require('express-validator');
 const user = require('../services/userService');
 const auth = require('../services/authService');
 
@@ -18,13 +17,6 @@ const upload = multer({
 //     dest: './public/uploads/'
 // }).array('file', 5);
 
-
-// 重置密码校验
-// const resetPwdVaildator = [
-//   body('username').isString().withMessage('用户名类型错误'),
-//   body('oldPassword').isString().withMessage('密码类型错误'),
-//   body('newPassword').isString().withMessage('密码类型错误')
-// ]
 
 // 验证码登录
 router.post('/login', user.login);
@@ -54,7 +46,7 @@ router.post('/modifyUser', user.modifyUser);
 router.post('/editUserAvatar', upload, user.editUserAvatar);
 
 // 密码重置
-// router.post('/resetPwd', resetPwdVaildator, service.resetPwd);
+// router.post('/resetPwd', service.resetPwd);
 
 
 module.exports = router;
