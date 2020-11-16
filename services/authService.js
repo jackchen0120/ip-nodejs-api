@@ -116,28 +116,33 @@ const oauthGithub = async (req, res, next) => {
           console.log("addAuthUser===", addAuthUser);
           if (addAuthUser.affectedRows == 1) {
             let queryUser = await getAuthUser(addAuthUser.insertId);
-            let userinfo = {
-              id: queryUser[0].id,
-              openid: queryUser[0].openid,
-              user_id: queryUser[0].user_id,
-              username: queryUser[0].username,
-              nickname: queryUser[0].nickname,
-              type: queryUser[0].type,
-              avatar_url: queryUser[0].avatar_url,
-              create_time: queryUser[0].create_time,
-              expire_time: queryUser[0].expire_time,
-              expires_in: queryUser[0].expires_in,
-              login_time: queryUser[0].login_time,
-              login_times: queryUser[0].login_times,
-            };
-            res.send({
-              code: CODE_SUCCESS,
-              msg: "github账号登录成功",
-              data: {
-                token,
-                userinfo,
-              },
-            });
+            let userImage = await addUserImage(queryUser[0].openid);
+            
+            if (userImage) {
+              let userinfo = {
+                id: queryUser[0].id,
+                openid: queryUser[0].openid,
+                user_id: queryUser[0].user_id,
+                username: queryUser[0].username,
+                nickname: queryUser[0].nickname,
+                type: queryUser[0].type,
+                avatar_url: queryUser[0].avatar_url,
+                create_time: queryUser[0].create_time,
+                expire_time: queryUser[0].expire_time,
+                expires_in: queryUser[0].expires_in,
+                login_time: queryUser[0].login_time,
+                login_times: queryUser[0].login_times,
+              };
+
+              res.send({
+                code: CODE_SUCCESS,
+                msg: "github账号登录成功",
+                data: {
+                  token,
+                  userinfo,
+                },
+              });
+            }
           } else {
             res.send({
               code: CODE_ERROR,
@@ -238,28 +243,33 @@ const oauthWeibo = async (req, res, next) => {
           console.log("addAuthUser===", addAuthUser);
           if (addAuthUser.affectedRows == 1) {
             let queryUser = await getAuthUser(addAuthUser.insertId);
-            let userinfo = {
-              id: queryUser[0].id,
-              openid: queryUser[0].openid,
-              user_id: queryUser[0].user_id,
-              username: queryUser[0].username,
-              nickname: queryUser[0].nickname,
-              type: queryUser[0].type,
-              avatar_url: queryUser[0].avatar_url,
-              create_time: queryUser[0].create_time,
-              expire_time: queryUser[0].expire_time,
-              expires_in: queryUser[0].expires_in,
-              login_time: queryUser[0].login_time,
-              login_times: queryUser[0].login_times,
-            };
-            res.send({
-              code: CODE_SUCCESS,
-              msg: "weibo账号登录成功",
-              data: {
-                token,
-                userinfo,
-              },
-            });
+            let userImage = await addUserImage(queryUser[0].openid);
+
+            if (userImage) {
+              let userinfo = {
+                id: queryUser[0].id,
+                openid: queryUser[0].openid,
+                user_id: queryUser[0].user_id,
+                username: queryUser[0].username,
+                nickname: queryUser[0].nickname,
+                type: queryUser[0].type,
+                avatar_url: queryUser[0].avatar_url,
+                create_time: queryUser[0].create_time,
+                expire_time: queryUser[0].expire_time,
+                expires_in: queryUser[0].expires_in,
+                login_time: queryUser[0].login_time,
+                login_times: queryUser[0].login_times,
+              };
+              
+              res.send({
+                code: CODE_SUCCESS,
+                msg: "weibo账号登录成功",
+                data: {
+                  token,
+                  userinfo,
+                },
+              });
+            }
           } else {
             res.send({
               code: CODE_ERROR,
@@ -356,6 +366,12 @@ const addUser = (user, type) => {
   let sql = `insert into user_info(user_id, avatar, nickname) values('${user.id}', '${avatar}', '${nickname}')`;
   return queryOne(sql);
 };
+
+// 新增用户图片
+const addUserImage = (user_id) => {
+  let sql = `insert into user_image(user_id) values('${user_id}')`;
+  return queryOne(sql);
+}
 
 module.exports = {
   oauthGithub,

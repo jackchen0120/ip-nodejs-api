@@ -91,5 +91,6 @@ module.exports = {
   queryOne,
   randomCode,
   githubConfig,
-  weiboConfig
+  weiboConfig,
+  redirect_uri
 }

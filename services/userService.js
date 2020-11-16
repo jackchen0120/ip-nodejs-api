@@ -8,7 +8,8 @@
 const { 
   querySql, 
   queryOne, 
-  randomCode 
+  randomCode,
+  redirect_uri 
 } = require('../utils/index');
 const md5 = require('../utils/md5');
 const jwt = require('jsonwebtoken');
@@ -171,15 +172,19 @@ const login = async (req, res, next) => {
             if (newUser && newUser.length > 0) {
               let token = getToken(phone);
               let userinfo = newUser[0];
+              let addSql = `insert into user_image(user_id) values('${userinfo.user_id}')`;
+              let addUserImage = await queryOne(addSql);
 
-              res.json({
-                code: CODE_SUCCESS,
-                msg: '自动注册成功',
-                data: {
-                  token,
-                  userinfo
-                }
-              })
+              if (addUserImage) {
+                res.json({
+                  code: CODE_SUCCESS,
+                  msg: '自动注册成功',
+                  data: {
+                    token,
+                    userinfo
+                  }
+                })
+              }
             } else {
               res.json({
                 code: CODE_ERROR,
@@ -421,14 +426,14 @@ const editUserAvatar = async (req, res, next) => {
     const [{ msg }] = err.errors;
     next(boom.badRequest(msg));
   } else {
-    console.log('req.file===', req);
     let file = req.file;
     if (file) {
         // 存储上传对象信息
         let fileInfo = {};
         // 修改名字，第一个参数为旧路径，第二个参数为新路径（注意：旧路径要和上面的dest保持一致）
-        fs.renameSync('./public/uploads/' + file.filename, './public/uploads/' + file.originalname);
+        fs.renameSync('./public/uploads/' + file.filename, './public/uploads/' + file.filename + '.' + file.originalname.split('.')[1]);
         // 获取文件信息
+        console.log('file===',file)
         fileInfo.mimetype = file.mimetype;
         fileInfo.originalname = file.originalname;
         fileInfo.size = file.size;
@@ -440,7 +445,7 @@ const editUserAvatar = async (req, res, next) => {
         })
 
         let { user_id } = req.body;
-        let imgUrl = 'http://localhost:3000/uploads/' + file.originalname;
+        let imgUrl = redirect_uri + '/static/uploads/' + file.filename + '.' + file.originalname.split('.')[1];
         
         if (user_id) {
             let sql = `update user_image set url='${imgUrl}', create_time='${moment().format('YYYY-MM-DD HH:mm:ss')}' where user_id='${user_id}'`;
@@ -453,7 +458,6 @@ const editUserAvatar = async (req, res, next) => {
                 url: imgUrl
               })
             } else {
-              console.log(image)
               res.send({
                 code: CODE_ERROR,
                 msg: '用户user_id不存在'
@@ -463,7 +467,7 @@ const editUserAvatar = async (req, res, next) => {
         } else {
             res.send({
                 code: CODE_ERROR,
-                msg: 'user_id不能为空'
+                msg: '用户user_id不能为空'
             })
         }
       
