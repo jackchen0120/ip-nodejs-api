@@ -9,7 +9,7 @@ const {
   querySql, 
   queryOne, 
   randomCode,
-  redirect_uri 
+  redirect_uri
 } = require('../utils/index');
 const md5 = require('../utils/md5');
 const jwt = require('jsonwebtoken');
