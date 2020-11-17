@@ -1,10 +1,3 @@
-/**
- * 描述: 连接mysql模块
- * 作者: Jack Chen
- * 日期: 2020-06-20
-*/
-
-
 const mysql = require('mysql');
 const config = require('../db/dbConfig');
 const redirect_uri = 'http://106.55.168.13';
@@ -91,5 +84,6 @@ module.exports = {
   queryOne,
   randomCode,
   githubConfig,
-  weiboConfig
+  weiboConfig,
+  redirect_uri
 }
