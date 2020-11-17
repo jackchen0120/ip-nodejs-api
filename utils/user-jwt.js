@@ -32,7 +32,6 @@ const jwtAuth = expressJwt({
     '/api/users/loginPwd',
     '/api/users/oauthGithub',
     '/api/users/oauthWeibo',
-    '/api/users/resetPwd'
   ]
 })
 
