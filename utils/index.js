@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const config = require('../db/dbConfig');
+const qiniu = require('qiniu');
 const redirect_uri = 'http://106.55.168.13';
 
 // 获取随机验证码
@@ -30,6 +31,20 @@ const weiboConfig = {
   client_id: '4147359527',
   client_secret: 'f4441b579047a391254994680385fcf1',
 };
+
+// 创建七牛云上传凭证
+let bucket = ''; // 上传的空间名
+let imageUrl = ''; // 域名名称
+let accessKey = '';
+let secretKey = '';
+let mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+let options = {
+  scope: bucket,
+};
+let putPolicy = new qiniu.rs.PutPolicy(options);
+let uploadToken = putPolicy.uploadToken(mac);
+let qnConfig = new qiniu.conf.Config();
+qnConfig.zone = qiniu.zone.Zone_z2;
 
 // 连接mysql
 const connect = () => {
@@ -67,7 +82,7 @@ const querySql = (sql) => {
 const queryOne = (sql) => {
   return new Promise((resolve, reject) => {
     querySql(sql).then(res => {
-      console.log('queryOne===', res)
+      // console.log('queryOne===', res)
       if ((res && res.length > 0) || res.affectedRows == 1) {
         resolve(res);
       } else {
@@ -84,5 +99,6 @@ module.exports = {
   randomCode,
   githubConfig,
   weiboConfig,
-  redirect_uri
+  redirect_uri,
+  uploadToken
 }

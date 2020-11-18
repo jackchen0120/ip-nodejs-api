@@ -46,6 +46,9 @@ router.post('/modifyUser', user.modifyUser);
 // 上传头像
 router.post('/editUserAvatar', upload, user.editUserAvatar);
 
+// 获取七牛云上传凭证
+router.get('/qiniuToken', user.uploadQiniu);
+
 // 密码重置
 // router.post('/resetPwd', service.resetPwd);
 

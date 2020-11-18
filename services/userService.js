@@ -8,7 +8,8 @@
 const {
   queryOne, 
   randomCode,
-  redirect_uri
+  redirect_uri,
+  uploadToken
 } = require('../utils/index');
 const md5 = require('../utils/md5');
 const jwt = require('jsonwebtoken');
@@ -365,7 +366,7 @@ const getMemberInfo = async (req, res, next) => {
   } else {
     let { user_id } = req.query;
     let userinfo = await getUserInfo(user_id);
-    console.log('userinfo===', userinfo);
+    // console.log('userinfo===', userinfo);
 
     if (userinfo) {
       res.send({
@@ -486,6 +487,23 @@ const editUserAvatar = async (req, res, next) => {
   
 }
 
+// 获取上传凭证
+const uploadQiniu = (req, res, next) => {
+  const err = validationResult(req);
+  if (!err.isEmpty()) {
+    const [{ msg }] = err.errors;
+    next(boom.badRequest(msg));
+  } else {
+    // console.log('uploadToken===', uploadToken);
+    res.send({
+      code: CODE_SUCCESS,
+      msg: '上传凭证获取成功',
+      upToken: uploadToken
+    })
+  }
+
+}
+
 // 获取图片详情
 const getImageDetail = (user_id) => {
   let sql = `select * from user_image where user_id='${user_id}'`;
@@ -501,5 +519,6 @@ module.exports = {
   resetPwd,
   modifyUser,
   getMemberInfo,
-  editUserAvatar
+  editUserAvatar,
+  uploadQiniu
 }
