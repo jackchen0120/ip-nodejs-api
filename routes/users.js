@@ -8,10 +8,11 @@ const express = require('express');
 const router = express.Router();
 const user = require('../services/userService');
 const auth = require('../services/authService');
+const path = require('path');
 
 const multer = require('multer');
 const upload = multer({
-    dest: './public/uploads/'
+    dest: path.join(__dirname, '../public/uploads/')
 }).single('file');
 // const uploadMore = multer({
 //     dest: './public/uploads/'

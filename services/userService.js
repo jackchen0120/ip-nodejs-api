@@ -5,8 +5,7 @@
 */
 
 
-const { 
-  querySql, 
+const {
   queryOne, 
   randomCode,
   redirect_uri
@@ -15,6 +14,7 @@ const md5 = require('../utils/md5');
 const jwt = require('jsonwebtoken');
 const boom = require('boom');
 const fs = require('fs');
+const path = require('path');
 const { body, validationResult } = require('express-validator');
 const {
   CODE_ERROR,
@@ -304,23 +304,22 @@ const resetPwd = async (req, res, next) => {
       if (newPassword) {
         newPassword = md5(newPassword);
         const sql = `update user set password='${newPassword}' where username='${username}' or phone='${username}'`;
-        querySql(sql)
-          .then(user => {
-            // console.log('密码重置===', user);
-            if (!user || user.length === 0) {
-              res.json({
-                code: CODE_ERROR,
-                msg: '重置密码失败',
-                data: null
-              })
-            } else {
-              res.json({
-                code: CODE_SUCCESS,
-                msg: '重置密码成功',
-                data: null
-              })
-            }
+        let user = await queryOne(sql);
+
+        // console.log('密码重置===', user);
+        if (user) {
+          res.json({
+            code: CODE_SUCCESS,
+            msg: '重置密码成功',
+            data: null
           })
+        } else {
+          res.json({
+            code: CODE_ERROR,
+            msg: '重置密码失败',
+            data: null
+          })
+        }
       } else {
         res.json({
           code: CODE_ERROR,
@@ -427,17 +426,27 @@ const editUserAvatar = async (req, res, next) => {
     next(boom.badRequest(msg));
   } else {
     let file = req.file;
-    if (file) {
+    console.log(req.file);
+    if (!file) {
+        // 判断图片文件是否存在
+        res.send({
+          code: CODE_ERROR,
+          msg: '上传失败'
+        })
+    } else {
         // 存储上传对象信息
         let fileInfo = {};
+        // 获取后缀扩展
+        // let extName = file.originalname.slice(file.originalname.lastIndexOf('.'));
+        let extName = file.mimetype.slice(file.mimetype.lastIndexOf('/')).replace('/', '.');
+        let upload = path.join(__dirname, '../public/uploads/');
         // 修改名字，第一个参数为旧路径，第二个参数为新路径（注意：旧路径要和上面的dest保持一致）
-        fs.renameSync('./public/uploads/' + file.filename, './public/uploads/' + file.filename + '.' + file.originalname.split('.')[1]);
+        fs.renameSync(upload + file.filename, upload + file.filename + extName);
         // 获取文件信息
-        console.log('file===',file)
-        fileInfo.mimetype = file.mimetype;
-        fileInfo.originalname = file.originalname;
-        fileInfo.size = file.size;
-        fileInfo.path = file.path;
+        // fileInfo.mimetype = file.mimetype;
+        // fileInfo.originalname = file.originalname;
+        // fileInfo.size = file.size;
+        // fileInfo.path = file.path;
 
         // 设置响应类型及编码
         res.set({
@@ -445,7 +454,8 @@ const editUserAvatar = async (req, res, next) => {
         })
 
         let { user_id } = req.body;
-        let imgUrl = redirect_uri + '/static/uploads/' + file.filename + '.' + file.originalname.split('.')[1];
+        let imgUrl = 'http://localhost:3000/static/uploads/' + file.filename + extName;
+        // let imgUrl = redirect_uri + ':3000/static/uploads/' + file.filename + extName; // 生产环境
         
         if (user_id) {
             let sql = `update user_image set url='${imgUrl}', create_time='${moment().format('YYYY-MM-DD HH:mm:ss')}' where user_id='${user_id}'`;
@@ -454,7 +464,7 @@ const editUserAvatar = async (req, res, next) => {
             if (image) {
               res.send({
                 code: CODE_SUCCESS,
-                msg: '上传头像成功',
+                msg: '上传成功',
                 url: imgUrl
               })
             } else {
@@ -470,14 +480,6 @@ const editUserAvatar = async (req, res, next) => {
                 msg: '用户user_id不能为空'
             })
         }
-      
-    } else {
-        // 判断图片文件是否存在
-        res.send({
-            code: CODE_ERROR,
-            msg: '上传文件不能为空'
-        })
-        return;
     }
 
   }
@@ -489,6 +491,7 @@ const getImageDetail = (user_id) => {
   let sql = `select * from user_image where user_id='${user_id}'`;
   return queryOne(sql);
 }
+
 
 module.exports = {
   login,

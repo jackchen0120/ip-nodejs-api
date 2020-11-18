@@ -80,7 +80,6 @@ const queryOne = (sql) => {
 }
 
 module.exports = {
-  querySql,
   queryOne,
   randomCode,
   githubConfig,

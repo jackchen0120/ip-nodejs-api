@@ -6,9 +6,7 @@
 
 
 const {
-  querySql,
   queryOne,
-  randomCode,
   githubConfig,
   weiboConfig,
 } = require("../utils/index");
