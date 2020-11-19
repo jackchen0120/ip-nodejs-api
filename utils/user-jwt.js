@@ -20,10 +20,11 @@ const jwtAuth = expressJwt({
   getToken: (req) => {
     if (req.headers.authorization) {
       return req.headers.authorization;
-    } else if (req.query && req.query.token) {
+    } else if (req.query.token) {
       return req.query.token;
+    } else if (req.body.token) {
+      return req.body.token;
     }
-    return null;
   }
   // 设置jwt认证白名单，比如/api/login登录接口不需要拦截
 }).unless({
@@ -41,37 +42,7 @@ const jwtAuth = expressJwt({
 // jwt-token解析
 const decode = (req) => {
   const token = req.get('Authorization');
-  let con = jwt.verify(token, PRIVATE_KEY, (err, decoded) => {
-    if (err) {
-      console.log('error===', err);
-      if (err.name == 'TokenExpiredError') { // token过期
-        let str = {
-          iat: 1,
-          exp: 0,
-          msg: 'token过期'
-        }
-        return str;
-      } else if (err.name == 'JsonWebTokenError') { // 无效的token
-        let str = {
-          iat: 1,
-          exp: 0,
-          msg: '无效的token'
-        }
-        return str;
-      }
-    } else {
-      return decoded;
-    }
-
-  });
-
-  console.log('con===', con);
-  if (con.iat < con.exp) {
-    // 开始时间小于结束时间，代表token还有效
-    return true;
-  } else {
-    return false;
-  }
+  return jwt.verify(token, PRIVATE_KEY, (err, decoded) => {
 }
 
 module.exports = {
