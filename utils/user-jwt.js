@@ -42,7 +42,7 @@ const jwtAuth = expressJwt({
 // jwt-token解析
 const decode = (req) => {
   const token = req.get('Authorization');
-  return jwt.verify(token, PRIVATE_KEY, (err, decoded) => {
+  return jwt.verify(token, PRIVATE_KEY);
 }
 
 module.exports = {
