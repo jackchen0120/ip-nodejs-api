@@ -33,7 +33,7 @@ const moment = require('moment');
 // 验证手机号是否发过短信验证码
 let validatePhoneCode = [];
 let sendCodePhone = (phone) => {
-  console.log('validatePhoneCode===', validatePhoneCode);
+  // console.log('validatePhoneCode===', validatePhoneCode);
   for (let item of validatePhoneCode) {
     if (phone == item.phone) {
       return true;
@@ -73,7 +73,7 @@ const regUser = async (phone) => {
   let sql = `insert into user(user_id, phone, status, create_time) value('${uuid.v1()}', '${phone}', 1, '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
   let res = await queryOne(sql);
   
-  console.log('用户注册===', res);
+  // console.log('用户注册===', res);
   if (res.affectedRows == 1) {
     // 执行成功获取用户信息，获取用户信息的方法
     let user = await getUser(phone);
@@ -165,7 +165,7 @@ const login = async (req, res, next) => {
           // 登录成功之后的操作
           const sql = `select id, user_id, username, phone, status, create_time, update_time from user where phone='${phone}'`;
           let user = await queryOne(sql);
-          console.log('验证码登录===', user);
+          // console.log('验证码登录===', user);
           if (!user || user.length == 0) {
             // 用户第一次注册，绑定表
             let newUser = await regUser(phone);
@@ -234,8 +234,8 @@ const login = async (req, res, next) => {
 const getCaptcha = (req, res) => {
   let codeConfig = {
     size: 4, // 验证码长度
-    ignoreChars: '0o1i', // 验证码字符中排除 0o1i
-    noise: 1, // 干扰线条数
+    ignoreChars: '0oO1ilI', // 验证码字符中排除 0o1i
+    noise: 0, // 干扰线条数
     width: 60, // 宽度
     height: 30, // 高度
     inverse: false, // 翻转颜色
@@ -266,10 +266,10 @@ const loginPwd = async (req, res, next) => {
     let { username, password } = req.body;
     // md5加密
     password = md5(password);
-    console.log('pwd===', password);
+    // console.log('pwd===', password);
     const sql = `select id, user_id, username, phone, status, create_time, update_time from user where username='${username}' or phone='${username}' and password='${password}'`;
     let user = await queryOne(sql);
-    console.log(user);
+    // console.log(user);
     if (user) {
       let token = getToken(username);
       let userinfo = user[0];
@@ -304,7 +304,7 @@ const resetPwd = async (req, res, next) => {
     oldPassword = md5(oldPassword);
     let validUser = await validateUser(username, oldPassword);
     
-    console.log('校验用户名和密码===', validUser);
+    // console.log('校验用户名和密码===', validUser);
     if (validUser) {
       if (newPassword) {
         newPassword = md5(newPassword);
@@ -431,7 +431,7 @@ const editUserAvatar = async (req, res, next) => {
     next(boom.badRequest(msg));
   } else {
     let file = req.file;
-    console.log(req.file);
+    // console.log(req.file);
     if (!file) {
         // 判断图片文件是否存在
         res.send({

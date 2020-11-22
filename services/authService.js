@@ -56,7 +56,7 @@ const oauthGithub = async (req, res, next) => {
       },
     });
 
-    console.log("accessToken===", tokenResponse.data.access_token);
+    // console.log("accessToken===", tokenResponse.data.access_token);
     let accessToken = tokenResponse.data.access_token;
 
     if (accessToken) {
@@ -74,7 +74,7 @@ const oauthGithub = async (req, res, next) => {
       let token = getToken(accessToken);
       if (result.status == 200) {
         let user = await validateAuthUser(result.data.id);
-        console.log("githubUser=========", user);
+        // console.log("githubUser=========", user);
         if (user) {
           user[0].login_times += 1;
           let updateAuthUser = await setAuthUser(result.data, 3, accessToken, 0, user[0].login_times);
@@ -110,7 +110,7 @@ const oauthGithub = async (req, res, next) => {
           }
         } else {
           let addAuthUser = await setAuthUser(result.data, 3, accessToken, 1, null);
-          console.log("addAuthUser===", addAuthUser);
+          // console.log("addAuthUser===", addAuthUser);
           if (addAuthUser.affectedRows == 1) {
             let queryUser = await getAuthUser(addAuthUser.insertId);
             let userImage = await addUserImage(queryUser[0].openid);
@@ -199,7 +199,7 @@ const oauthWeibo = async (req, res, next) => {
       let token = getToken(accessToken);
       if (result.status == 200) {
         let user = await validateAuthUser(uid);
-        console.log("weiboUser=========", user);
+        // console.log("weiboUser=========", user);
         if (user) {
           user[0].login_times += 1;
           let updateAuthUser = await setAuthUser(result.data, 2, accessToken, 0, user[0].login_times);
@@ -237,7 +237,7 @@ const oauthWeibo = async (req, res, next) => {
 
         } else {
           let addAuthUser = await setAuthUser(result.data, 2, accessToken, 1, null);
-          console.log("addAuthUser===", addAuthUser);
+          // console.log("addAuthUser===", addAuthUser);
           if (addAuthUser.affectedRows == 1) {
             let queryUser = await getAuthUser(addAuthUser.insertId);
             let userImage = await addUserImage(queryUser[0].openid);
