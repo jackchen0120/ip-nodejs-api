@@ -4,7 +4,6 @@
  * 日期: 2020-11-15
 */
 
-
 const {
   queryOne,
   githubConfig,
@@ -36,7 +35,7 @@ const getToken = (username) => {
   );
 
   return token;
-};
+}
 
 // github登录
 const oauthGithub = async (req, res, next) => {
@@ -164,7 +163,7 @@ const oauthGithub = async (req, res, next) => {
       });
     }
   }
-};
+}
 
 // 微博登录
 const oauthWeibo = async (req, res, next) => {
@@ -304,19 +303,19 @@ const oauthWeibo = async (req, res, next) => {
       }
     } 
   }
-};
+}
 
 // 核验用户是否第一次登录
 const validateAuthUser = (openid) => {
   let sql = `select * from user_third_auth where openid=${openid}`;
   return queryOne(sql);
-};
+}
 
 // 获取第三方用户信息
 const getAuthUser = (id) => {
   let sql = `select * from user_third_auth where id=${id}`;
   return queryOne(sql);
-};
+}
 
 // 更新或新增第三方登录信息
 const setAuthUser = (user, type, accessToken, status, loginTimes) => {
@@ -348,7 +347,7 @@ const setAuthUser = (user, type, accessToken, status, loginTimes) => {
       )}', '${moment().format("YYYY-MM-DD HH:mm:ss")}', 1)`;
   }
   return queryOne(sql);
-};
+}
 
 // 新增个人用户信息
 const addUser = (user, type) => {
@@ -363,7 +362,7 @@ const addUser = (user, type) => {
   }
   let sql = `insert into user_info(user_id, avatar, nickname) values('${user.id}', '${avatar}', '${nickname}')`;
   return queryOne(sql);
-};
+}
 
 // 新增用户图片
 const addUserImage = (user_id) => {
@@ -374,4 +373,4 @@ const addUserImage = (user_id) => {
 module.exports = {
   oauthGithub,
   oauthWeibo,
-};
+}

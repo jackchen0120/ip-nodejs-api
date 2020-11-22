@@ -16,8 +16,8 @@ const githubConfig = {
     user_url: 'https://api.github.com/user',
 
     redirect_uri: redirect_uri,
-    client_id: '6f555f8eb5c6677a6f0b',
-    client_secret: '5c7284c91cae13f6be05980716788cec6dafd960',
+    client_id: '',
+    client_secret: '',
 };
 
 // weibo配置
@@ -28,8 +28,8 @@ const weiboConfig = {
   user_url: 'https://api.weibo.com/2/users/show.json',
   
   redirect_uri: redirect_uri,
-  client_id: '4147359527',
-  client_secret: 'f4441b579047a391254994680385fcf1',
+  client_id: '',
+  client_secret: '',
 };
 
 // 创建七牛云上传凭证

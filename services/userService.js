@@ -235,18 +235,22 @@ const getCaptcha = (req, res) => {
   let codeConfig = {
     size: 4, // 验证码长度
     ignoreChars: '0o1i', // 验证码字符中排除 0o1i
-    noise: 0, // 干扰线条数
+    noise: 1, // 干扰线条数
     width: 60, // 宽度
     height: 30, // 高度
     inverse: false, // 翻转颜色
     fontSize: 35, // 字体大小
   }
-  let getImageCode = svgCaptcha.create(codeConfig);
-  req.session.captcha = getImageCode.text.toLowerCase();
+
+  let getCapCode = svgCaptcha.create(codeConfig); // 图形验证码
+
+  // let getCapCode = svgCaptcha.createMathExpr(codeConfig); // 算法验证码
+
+  req.session.captcha = getCapCode.text.toLowerCase(); // session存储
   // console.log('captcha===', req.session);
 
-  res.type('svg');
-  res.status(200).send(getImageCode.data);
+  res.type('svg'); // 响应类型
+  res.status(200).send(getCapCode.data);
 }
 
 // 密码登录
@@ -281,7 +285,7 @@ const loginPwd = async (req, res, next) => {
     } else {
       res.json({ 
         code: CODE_ERROR, 
-        msg: '用户名或密码错误', 
+        msg: '账号或密码错误', 
         data: null 
       })
     }
